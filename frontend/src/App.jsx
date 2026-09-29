@@ -87,7 +87,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cinema-950 text-slate-100 font-sans selection:bg-cinema-accent selection:text-cinema-950">
+    <div className="min-h-screen flex flex-col bg-canvas text-ink-primary font-sans selection:bg-brand-light selection:text-brand overflow-x-hidden">
       {/* Top Fixed Navbar */}
       <Navbar onSearchClick={focusSearch} />
 

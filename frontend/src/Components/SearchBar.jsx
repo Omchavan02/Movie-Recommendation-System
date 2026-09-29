@@ -23,7 +23,6 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
   const handleSuggestionClick = (title) => {
     setMovieName(title);
     if (onSearch) {
-      // Trigger search on next tick after state updates
       setTimeout(() => onSearch(title), 50);
     }
   };
@@ -36,10 +35,10 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
   return (
     <div className="w-full max-w-3xl mx-auto" id="hero-search">
       <form onSubmit={handleSubmit} className="relative group">
-        <div className="relative flex items-center rounded-2xl bg-cinema-900/90 backdrop-blur-xl border border-cinema-700/80 group-focus-within:border-cinema-accent shadow-2xl shadow-black/60 group-focus-within:shadow-cinema-amberGlow transition-all duration-300">
+        <div className="relative flex items-center rounded-2xl bg-white border border-canvas-border group-focus-within:border-brand group-focus-within:ring-4 group-focus-within:ring-brand/10 shadow-card transition-all duration-300">
           {/* Leading Search Icon */}
-          <div className="pl-5 pr-3 text-slate-400 group-focus-within:text-cinema-accent transition-colors">
-            <Search className="w-6 h-6" />
+          <div className="pl-3.5 sm:pl-5 pr-2 sm:pr-3 text-ink-muted group-focus-within:text-brand transition-colors shrink-0">
+            <Search className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
           {/* Search Input */}
@@ -49,9 +48,9 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
             value={movieName}
             onChange={(e) => setMovieName(e.target.value)}
             disabled={loading}
-            placeholder="Search any movie title (e.g. Avatar, Inception)..."
+            placeholder="Search movie title (e.g. Avatar)..."
             autoComplete="off"
-            className="w-full py-4 sm:py-5 bg-transparent text-white placeholder-slate-400 text-base sm:text-lg font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3.5 sm:py-5 bg-transparent text-ink-primary placeholder-ink-faint text-sm sm:text-lg font-medium focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-w-0"
             aria-label="Movie Title Search"
           />
 
@@ -60,7 +59,7 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
             <button
               type="button"
               onClick={handleClear}
-              className="p-2 mr-2 text-slate-400 hover:text-white rounded-full hover:bg-cinema-800 transition-colors"
+              className="p-1.5 sm:p-2 mr-1 sm:mr-2 text-ink-muted hover:text-ink-primary rounded-full hover:bg-canvas-subtle transition-colors shrink-0"
               aria-label="Clear Search Input"
             >
               <X className="w-4 h-4" />
@@ -68,11 +67,11 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
           )}
 
           {/* Submit Button */}
-          <div className="pr-3">
+          <div className="pr-2 sm:pr-3 shrink-0">
             <button
               type="submit"
               disabled={loading}
-              className="px-5 sm:px-7 py-3 rounded-xl bg-gradient-to-r from-cinema-accent to-amber-600 hover:from-cinema-accentHover hover:to-amber-500 text-cinema-950 font-bold text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-cinema-accent/20 hover:shadow-cinema-accent/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-3.5 sm:px-7 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-brand via-brand-blue to-brand-violet hover:from-brand-hover hover:to-brand-violetHover text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
             >
               {loading ? (
                 <>
@@ -91,8 +90,8 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
 
       {/* Suggested Quick Picks */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-        <span className="text-slate-400 flex items-center gap-1 font-medium">
-          <Sparkles className="w-3.5 h-3.5 text-cinema-accent" />
+        <span className="text-ink-muted flex items-center gap-1 font-medium">
+          <Sparkles className="w-3.5 h-3.5 text-brand" />
           Popular:
         </span>
         {SUGGESTIONS.map((title) => (
@@ -100,7 +99,7 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
             key={title}
             onClick={() => handleSuggestionClick(title)}
             disabled={loading}
-            className="px-2.5 py-1 rounded-full bg-cinema-850 hover:bg-cinema-800 border border-cinema-700/60 hover:border-cinema-accent/50 text-slate-300 hover:text-cinema-accent transition-all duration-150 disabled:opacity-50 active:scale-95"
+            className="px-3 py-1 rounded-full bg-white hover:bg-brand-light border border-canvas-border hover:border-brand/40 text-ink-secondary hover:text-brand font-medium transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50"
           >
             {title}
           </button>
