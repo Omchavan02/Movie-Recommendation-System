@@ -34,7 +34,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build and Distribution
-/build/
+build/
+frontend/build/
 dist/
 *.egg
 *.egg-info/
