@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node Server.js",
     "dev": "nodemon Server.js",
+    "seed": "node seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dipanjan Pathak",
