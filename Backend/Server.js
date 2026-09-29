@@ -18,7 +18,9 @@ const Movie = require('./models/Movie')
 app.use(cors())
 
 // Connect to MongoDB database
-mongoose.connect(mongoUri)
+mongoose.connect(mongoUri).catch((err) => {
+    console.error('MongoDB connection error:', err.message)
+})
 
 // Get the connection instance
 const db = mongoose.connection
@@ -45,6 +47,10 @@ app.get('/api/movies/:movieName', async (req, res) => {
     const { movieName } = req.params 
 
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ error: 'Database service unavailable. Please ensure MongoDB is running.' })
+        }
+
         console.log(`Searching for movie: ${movieName}`)
 
         // Find a movie in the MongoDB database that matches the given title
