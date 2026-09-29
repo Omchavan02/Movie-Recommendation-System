@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cinema-950 text-slate-100 font-sans antialiased selection:bg-cinema-accent selection:text-cinema-950;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+}
+
+/* Subtle cinematic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0E17;
+}
+::-webkit-scrollbar-thumb {
+  background: #232A40;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #343E5C;
+}

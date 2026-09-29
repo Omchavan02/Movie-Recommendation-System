@@ -42,19 +42,29 @@ app.get('/api/health', (req, res) => {
     })
 })
 
+function escapeRegex(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 // Define a route to handle GET requests to '/api/movies/:movieName'
 app.get('/api/movies/:movieName', async (req, res) => {
-    const { movieName } = req.params 
+    const rawMovieName = req.params.movieName || ''
+    const movieName = rawMovieName.trim()
 
     try {
+        if (!movieName) {
+            return res.status(400).json({ error: 'Movie name is required' })
+        }
+
         if (mongoose.connection.readyState !== 1) {
             return res.status(503).json({ error: 'Database service unavailable. Please ensure MongoDB is running.' })
         }
 
         console.log(`Searching for movie: ${movieName}`)
 
-        // Find a movie in the MongoDB database that matches the given title
-        const movie = await Movie.findOne({ title: movieName })
+        // Find a movie in MongoDB with case-insensitive exact title match
+        const escaped = escapeRegex(movieName)
+        const movie = await Movie.findOne({ title: { $regex: new RegExp(`^${escaped}$`, 'i') } })
 
         // If no movie is found, send a 404 response with an error message
         if (!movie) {
