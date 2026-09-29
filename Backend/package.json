@@ -6,6 +6,7 @@
     "start": "node Server.js",
     "dev": "nodemon Server.js",
     "seed": "node seed.js",
+    "enrich:tmdb": "node enrichTmdb.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dipanjan Pathak",
