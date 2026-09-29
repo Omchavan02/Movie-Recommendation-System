@@ -14,7 +14,11 @@ function MovieCardSkeleton() {
       <div className="p-5 sm:p-6 flex flex-col flex-grow justify-between gap-4">
         <div>
           <div className="h-6 w-3/4 rounded-md bg-slate-200 mb-2" />
-          <div className="h-4 w-1/2 rounded-md bg-slate-100 mb-4" />
+          <div className="h-4 w-1/2 rounded-md bg-slate-100 mb-3" />
+          <div className="flex gap-1.5 mb-4">
+            <div className="h-4 w-14 rounded-md bg-slate-100" />
+            <div className="h-4 w-16 rounded-md bg-slate-100" />
+          </div>
           <div className="space-y-2">
             <div className="h-3 w-full rounded bg-slate-100" />
             <div className="h-3 w-5/6 rounded bg-slate-100" />

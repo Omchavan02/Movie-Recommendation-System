@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Film, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Clock, Film, ExternalLink, ChevronDown, ChevronUp, Star, Sparkles } from 'lucide-react';
+import { getTmdbImageUrl } from '../utils/tmdb';
 
-function MovieCard({ movie, index }) {
+function MovieCard({ movie, index, onSelect, isRecommendation = true }) {
   const [expanded, setExpanded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const releaseYear = (movie.release_date && typeof movie.release_date === 'string')
     ? movie.release_date.slice(0, 4)
@@ -15,6 +17,16 @@ function MovieCard({ movie, index }) {
 
   const runtimeText = movie.runtime ? `${movie.runtime} min` : null;
 
+  const posterUrl = getTmdbImageUrl(movie.poster_path, 'w500');
+  const fallbackBackdropUrl = getTmdbImageUrl(movie.backdrop_path, 'w780');
+  const displayImage = posterUrl || fallbackBackdropUrl;
+
+  const hasValidHomepage = movie.homepage &&
+    typeof movie.homepage === 'string' &&
+    /^https?:\/\//i.test(movie.homepage.trim());
+
+  const genresList = Array.isArray(movie.genres) ? movie.genres : [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,25 +35,74 @@ function MovieCard({ movie, index }) {
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-white border border-canvas-border hover:border-brand/40 shadow-card hover:shadow-card-hover transition-all duration-300"
     >
-      {/* Cinematic Poster / Feature Visual Frame */}
-      <div className="relative aspect-[16/10] sm:aspect-[3/2] bg-gradient-to-br from-slate-50 via-canvas-muted to-brand-light/30 overflow-hidden flex items-center justify-center p-6 border-b border-canvas-borderLight">
-        {/* Subtle decorative glow */}
-        <div className="absolute inset-0 bg-radial-gradient from-brand/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        
-        {/* Film reel placeholder badge */}
-        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-center group-hover:scale-105 group-hover:border-brand/30 transition-all duration-300">
-          <Film className="w-7 h-7 text-brand group-hover:text-brand-violet transition-colors" />
-        </div>
+      {/* Cinematic Poster Frame */}
+      <div className="relative aspect-[16/10] sm:aspect-[3/2] bg-slate-900 overflow-hidden flex items-center justify-center border-b border-canvas-borderLight">
+        {displayImage && !imgError ? (
+          <img
+            src={displayImage}
+            alt={movie.title || 'Movie Poster'}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 ease-out"
+          />
+        ) : (
+          /* Graceful CineMatch Fallback Placeholder */
+          <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-canvas-muted to-brand-light/30">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-center mb-2 group-hover:scale-105 group-hover:border-brand/30 transition-all duration-300">
+              <Film className="w-7 h-7 text-brand group-hover:text-brand-violet transition-colors" />
+            </div>
+            <span className="text-[11px] font-medium text-ink-muted">Cinema Catalog</span>
+          </div>
+        )}
+
+        {/* Ambient Dark Gradient for Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/95 backdrop-blur-md border border-slate-200/90 text-xs font-semibold text-ink-primary shadow-2xs">
-          <Calendar className="w-3.5 h-3.5 text-brand" />
-          <span>{releaseYear || 'Cinema'}</span>
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/95 backdrop-blur-md border border-slate-200/90 text-xs font-bold text-ink-primary shadow-2xs">
+          {typeof movie.vote_average === 'number' && movie.vote_average > 0 ? (
+            <>
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span>{movie.vote_average.toFixed(1)}</span>
+            </>
+          ) : (
+            <>
+              <Star className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-ink-muted">NR</span>
+            </>
+          )}
         </div>
 
+        {releaseYear && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/95 backdrop-blur-md border border-slate-200/90 text-xs font-semibold text-ink-primary shadow-2xs">
+            <Calendar className="w-3.5 h-3.5 text-brand" />
+            <span>{releaseYear}</span>
+          </div>
+        )}
+
+        {/* Bottom Badges */}
+        {isRecommendation ? (
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand/90 backdrop-blur-md text-[11px] font-semibold text-white shadow-2xs">
+            <span>#{index + 1} Match</span>
+          </div>
+        ) : onSelect ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(movie);
+            }}
+            className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/95 hover:bg-white backdrop-blur-md text-[11px] font-bold text-brand shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            aria-label={`Get recommendations for ${movie.title}`}
+          >
+            <Sparkles className="w-3 h-3 text-brand" />
+            <span>Recommend</span>
+          </button>
+        ) : null}
+
         {runtimeText && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/95 backdrop-blur-md border border-slate-200/90 text-xs font-medium text-ink-secondary shadow-2xs">
-            <Clock className="w-3.5 h-3.5 text-brand-violet" />
+          <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-[11px] font-medium text-white shadow-2xs">
+            <Clock className="w-3 h-3 text-white/90" />
             <span>{runtimeText}</span>
           </div>
         )}
@@ -51,27 +112,46 @@ function MovieCard({ movie, index }) {
       <div className="p-5 sm:p-6 flex flex-col flex-grow justify-between gap-4">
         <div>
           {/* Movie Title */}
-          <h3 className="text-lg sm:text-xl font-bold text-ink-primary tracking-tight leading-snug group-hover:text-brand transition-colors">
+          <h3
+            onClick={onSelect ? () => onSelect(movie) : undefined}
+            className={`text-lg sm:text-xl font-bold text-ink-primary tracking-tight leading-snug group-hover:text-brand transition-colors line-clamp-1 ${onSelect ? 'cursor-pointer' : ''}`}
+            title={movie.title || 'Untitled Movie'}
+          >
             {movie.title || 'Untitled Movie'}
           </h3>
 
           {/* Tagline */}
           {movie.tagline ? (
-            <p className="mt-1.5 text-xs sm:text-sm text-brand-violet italic font-medium leading-relaxed">
+            <p className="mt-1 text-xs sm:text-sm text-brand-violet italic font-medium leading-relaxed line-clamp-1">
               "{movie.tagline}"
             </p>
           ) : (
-            <p className="mt-1.5 text-xs text-ink-faint italic">No tagline recorded</p>
+            <p className="mt-1 text-xs text-ink-faint italic">No tagline recorded</p>
+          )}
+
+          {/* Genre Badges */}
+          {genresList.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {genresList.slice(0, 3).map((genre) => (
+                <span
+                  key={genre}
+                  className="px-2 py-0.5 rounded-md bg-canvas-subtle border border-canvas-border text-[11px] font-medium text-ink-secondary"
+                >
+                  {genre}
+                </span>
+              ))}
+            </div>
           )}
 
           {/* Plot Overview */}
           {movie.overview && (
             <div className="mt-3 text-xs sm:text-sm text-ink-secondary leading-relaxed">
               <p>
-                {expanded ? movie.overview : `${movie.overview.slice(0, 140)}${movie.overview.length > 140 ? '...' : ''}`}
+                {expanded ? movie.overview : `${movie.overview.slice(0, 130)}${movie.overview.length > 130 ? '...' : ''}`}
               </p>
-              {movie.overview.length > 140 && (
+              {movie.overview.length > 130 && (
                 <button
+                  type="button"
                   onClick={() => setExpanded(!expanded)}
                   className="mt-1 text-[11px] font-semibold text-brand hover:text-brand-hover flex items-center gap-0.5 focus:outline-none"
                 >
@@ -97,19 +177,37 @@ function MovieCard({ movie, index }) {
             <span className="text-ink-secondary font-semibold">{releaseDateFormatted}</span>
           </div>
 
-          {movie.homepage ? (
-            <a
-              href={movie.homepage}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-brand hover:text-brand-hover font-semibold transition-colors"
-            >
-              <span>Official Site</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          ) : (
-            <span className="text-[11px] text-ink-faint font-mono">ID: {movie.id}</span>
-          )}
+          <div className="flex items-center gap-3">
+            {onSelect && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(movie);
+                }}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-hover hover:underline transition-colors"
+                title={`Find recommendations similar to ${movie.title}`}
+              >
+                <Sparkles className="w-3 h-3 text-brand" />
+                <span>Similar</span>
+              </button>
+            )}
+
+            {hasValidHomepage ? (
+              <a
+                href={movie.homepage.trim()}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 text-ink-secondary hover:text-brand font-semibold transition-colors"
+              >
+                <span>Site</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            ) : (
+              <span className="text-[11px] text-ink-faint font-mono">ID: {movie.id}</span>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

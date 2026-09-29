@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from './Components/Navbar';
 import Hero from './Components/Hero';
 import RecommendationSection from './Components/RecommendationSection';
+import DiscoverSection from './Components/DiscoverSection';
 import HowItWorks from './Components/HowItWorks';
 import Footer from './Components/Footer';
 
@@ -17,6 +18,15 @@ function App() {
   const [hasSearched, setHasSearched] = useState(false);
 
   const recommendationsRef = useRef(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get('search') || params.get('movie');
+    if (initialQuery && initialQuery.trim()) {
+      handleSearch(initialQuery.trim());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async (overrideTitle) => {
     const rawQuery = typeof overrideTitle === 'string' ? overrideTitle : movieName;
@@ -111,6 +121,9 @@ function App() {
           hasSearched={hasSearched}
           onRetry={focusSearch}
         />
+
+        {/* Full-Catalog Movie Discovery Experience */}
+        <DiscoverSection onSelectMovie={(title) => handleSearch(title)} />
 
         {/* Explanatory Pipeline & Architecture */}
         <HowItWorks />

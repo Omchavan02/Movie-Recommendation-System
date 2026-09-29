@@ -59,7 +59,7 @@ function Navbar({ onSearchClick }) {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <button
-              onClick={() => scrollTo('hero-search')}
+              onClick={() => scrollTo('discover-catalog')}
               className="text-sm font-medium text-ink-secondary hover:text-brand transition-colors flex items-center gap-1.5"
             >
               <Compass className="w-4 h-4 text-brand" />
@@ -109,7 +109,7 @@ function Navbar({ onSearchClick }) {
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-b border-canvas-border px-4 pt-4 pb-6 mt-3 shadow-xl">
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => scrollTo('hero-search')}
+              onClick={() => scrollTo('discover-catalog')}
               className="text-left text-sm font-medium text-ink-secondary hover:text-brand py-2 px-3 rounded-lg hover:bg-canvas-subtle transition-colors flex items-center gap-2"
             >
               <Compass className="w-4 h-4 text-brand" />
