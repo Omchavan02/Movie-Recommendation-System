@@ -1,0 +1,17 @@
+{
+  "name": "movie-recomender",
+  "version": "1.0.0",
+  "description": "🎬 Movie Recommendation System\r Overview\r Welcome to the Movie Recommendation System! This project utilizes a diverse set of modern technologies to provide personalized movie recommendations. The stack includes robust backend services, a responsive frontend, and an intelligent machine learning model.",
+  "main": "index.js",
+  "scripts": {
+    "start-backend": "cd Backend && nodemon server.js",
+    "start-frontend": "cd frontend && npm start",
+    "start-python": "cd Movie_Python && python manage.py runserver",
+    "dev": "concurrently \"npm run start-backend\" \"npm run start-frontend\" \"npm run start-python\""
+  },
+  "author": "Dipanjan Pathak",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
