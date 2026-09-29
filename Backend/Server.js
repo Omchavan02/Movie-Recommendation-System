@@ -1,4 +1,5 @@
 // Import required modules
+require('dotenv').config()
 const express = require('express') 
 const axios = require('axios') 
 const mongoose = require('mongoose') 
@@ -6,7 +7,9 @@ const cors = require('cors')
 
 // Initialize the Express application
 const app = express()
-const port = 3050 
+const port = process.env.PORT || 3050;
+const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/cinemas'
+const djangoUrl = (process.env.DJANGO_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '')
 
 // Import the Movie model for MongoDB operations
 const Movie = require('./models/Movie')
@@ -14,11 +17,8 @@ const Movie = require('./models/Movie')
 // Use CORS middleware to allow cross-origin requests
 app.use(cors())
 
-// Connect to MongoDB database named 'cinemas' on localhost
-mongoose.connect('mongodb://127.0.0.1:27017/cinemas', {
-    useNewUrlParser: true, 
-    useUnifiedTopology: true 
-})
+// Connect to MongoDB database
+mongoose.connect(mongoUri)
 
 // Get the connection instance
 const db = mongoose.connection
@@ -29,6 +29,15 @@ db.on('error', console.error.bind(console, 'connection error:'))
 // Log a success message when the connection is established
 db.once('open', () => {
     console.log('Connected to MongoDB')
+})
+
+// Define a health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        service: 'express-backend',
+        mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    })
 })
 
 // Define a route to handle GET requests to '/api/movies/:movieName'
@@ -50,7 +59,7 @@ app.get('/api/movies/:movieName', async (req, res) => {
         console.log(`Movie found: ${movie.title} with ID: ${movie.id}`) 
 
         // Make an HTTP request to a Django API to get recommended movies based on the found movie's ID
-        const djangoResponse = await axios.get(`http://127.0.0.1:8000/api/recommended/${movie.id}/`)
+        const djangoResponse = await axios.get(`${djangoUrl}/api/recommended/${movie.id}/`)
 
         // Extract recommended movie IDs from the Django API response
         const recommendedMovieIds = djangoResponse.data.recommended_movies
@@ -77,6 +86,3 @@ app.get('/api/movies/:movieName', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`)
 })
-
-
-

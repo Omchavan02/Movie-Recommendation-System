@@ -15,6 +15,14 @@ def get_movie_by_id(movie_id):
     return None
 
 @api_view(['GET'])
+def health_check(request):
+    return Response({
+        "status": "ok",
+        "service": "django-ml-recommendation",
+        "movies_loaded": len(movies)
+    })
+
+@api_view(['GET'])
 def recommended(request, movie_id):
     recommended_movie_list_index = []
 
@@ -35,7 +43,7 @@ def recommended(request, movie_id):
         movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:7]
 
         for i in movies_list:
-            recommended_movie_list_index.append(movies.iloc[i[0]].movie_id)
+            recommended_movie_list_index.append(int(movies.iloc[i[0]].movie_id))
 
         return Response({"recommended_movies": recommended_movie_list_index})
 
@@ -43,4 +51,3 @@ def recommended(request, movie_id):
         return Response({"error": "Movie not found"}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
