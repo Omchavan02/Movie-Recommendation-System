@@ -32,9 +32,11 @@ function Navbar({ onSearchClick }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
-          <div
+          <button
+            type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer group text-left focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded-xl p-1 -m-1"
+            aria-label="CineMatch Home - Scroll to top"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand via-brand-blue to-brand-violet p-0.5 shadow-md shadow-brand/25 group-hover:scale-105 transition-transform duration-200">
               <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
@@ -54,7 +56,7 @@ function Navbar({ onSearchClick }) {
                 Content-Based Recommendation Engine
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">

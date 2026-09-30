@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Search, Binary, Target, Database, Server, Cpu, Layers } from 'lucide-react';
 
 const STEPS = [
@@ -64,6 +64,8 @@ const ARCH_STACK = [
 ];
 
 function HowItWorks() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <section id="how-it-works" className="py-20 bg-white border-t border-canvas-border scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,10 +90,10 @@ function HowItWorks() {
             return (
               <motion.div
                 key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+                whileInView={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.12 }}
+                transition={{ duration: shouldReduceMotion ? 0.2 : 0.4, delay: shouldReduceMotion ? 0 : idx * 0.12 }}
                 className="relative p-6 sm:p-8 rounded-2xl bg-canvas-subtle/60 border border-canvas-border hover:border-brand/30 shadow-xs hover:shadow-card transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between mb-6">

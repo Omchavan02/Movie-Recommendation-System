@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Calendar, Clock, Film, ExternalLink, ChevronDown, ChevronUp, Star, Sparkles } from 'lucide-react';
 import { getTmdbImageUrl } from '../utils/tmdb';
 
 function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = true }) {
   const [expanded, setExpanded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   const releaseYear = (movie.release_date && typeof movie.release_date === 'string')
     ? movie.release_date.slice(0, 4)
@@ -21,6 +22,11 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
   const fallbackBackdropUrl = getTmdbImageUrl(movie.backdrop_path, 'w780');
   const displayImage = posterUrl || fallbackBackdropUrl;
 
+  // Reset image error state whenever movie identity or displayImage changes
+  useEffect(() => {
+    setImgError(false);
+  }, [movie?._id, movie?.id, displayImage]);
+
   const hasValidHomepage = movie.homepage &&
     typeof movie.homepage === 'string' &&
     /^https?:\/\//i.test(movie.homepage.trim());
@@ -29,16 +35,25 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.07, ease: 'easeOut' }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
+      animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: shouldReduceMotion ? 0 : index * 0.07, ease: 'easeOut' }}
+      whileHover={shouldReduceMotion ? undefined : { y: -5, transition: { duration: 0.2 } }}
       className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-white border border-canvas-border hover:border-brand/40 shadow-card hover:shadow-card-hover transition-all duration-300"
     >
       {/* Cinematic Poster Frame */}
       <div
+        role={onSelect ? 'button' : undefined}
+        tabIndex={onSelect ? 0 : undefined}
+        aria-label={onSelect ? `View details for ${movie.title || 'Movie'}` : undefined}
         onClick={onSelect ? () => onSelect(movie) : undefined}
-        className={`relative aspect-[16/10] sm:aspect-[3/2] bg-slate-900 overflow-hidden flex items-center justify-center border-b border-canvas-borderLight ${onSelect ? 'cursor-pointer' : ''}`}
+        onKeyDown={onSelect ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelect(movie);
+          }
+        } : undefined}
+        className={`relative aspect-[16/10] sm:aspect-[3/2] bg-slate-900 overflow-hidden flex items-center justify-center border-b border-canvas-borderLight focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none ${onSelect ? 'cursor-pointer' : ''}`}
       >
         {displayImage && !imgError ? (
           <img

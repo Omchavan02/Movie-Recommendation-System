@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Star,
   Calendar,
@@ -21,6 +21,13 @@ function MovieDetailSection({
 }) {
   const [posterError, setPosterError] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Reset image error states whenever movie identity changes
+  useEffect(() => {
+    setPosterError(false);
+    setBackdropError(false);
+  }, [movie?.id, movie?.title]);
 
   if (!movie) return null;
 
@@ -53,9 +60,9 @@ function MovieDetailSection({
   return (
     <section id="movie-detail" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 scroll-mt-24">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: 'easeOut' }}
+        initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24 }}
+        animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduceMotion ? 0.2 : 0.45, ease: 'easeOut' }}
         className="relative rounded-3xl overflow-hidden bg-white border border-canvas-border shadow-card"
       >
         {/* Backdrop Banner Area */}
@@ -82,7 +89,7 @@ function MovieDetailSection({
             <button
               type="button"
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white/90 hover:text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-md"
+              className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white/90 hover:text-white backdrop-blur-md border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-md focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
               aria-label="Close Movie Detail"
               title="Close and return to catalog"
             >
@@ -234,7 +241,9 @@ function MovieDetailSection({
                   type="button"
                   onClick={() => onFindSimilar && onFindSimilar(movie.title)}
                   disabled={recLoading}
-                  className="px-6 sm:px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand via-brand-blue to-brand-violet hover:from-brand-hover hover:to-brand-violetHover text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  aria-busy={recLoading}
+                  aria-label="Find similar movies using content recommendation"
+                  className="px-6 sm:px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand via-brand-blue to-brand-violet hover:from-brand-hover hover:to-brand-violetHover text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
                 >
                   {recLoading ? (
                     <>
@@ -255,7 +264,7 @@ function MovieDetailSection({
                     href={movie.homepage.trim()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 border border-canvas-border hover:border-slate-300 text-xs sm:text-sm font-semibold text-ink-primary transition-all flex items-center gap-2 shadow-2xs"
+                    className="px-5 py-3.5 rounded-xl bg-white hover:bg-slate-50 border border-canvas-border hover:border-slate-300 text-xs sm:text-sm font-semibold text-ink-primary transition-all flex items-center gap-2 shadow-2xs focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
                   >
                     <span>Official Site</span>
                     <ExternalLink className="w-4 h-4 text-brand" />

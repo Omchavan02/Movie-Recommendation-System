@@ -34,25 +34,25 @@ function Footer() {
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-ink-secondary">
             <button
               onClick={() => scrollTo('hero-search')}
-              className="hover:text-brand transition-colors"
+              className="hover:text-brand transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded px-1.5 py-0.5"
             >
               Discover
             </button>
             <button
               onClick={() => scrollTo('how-it-works')}
-              className="hover:text-brand transition-colors"
+              className="hover:text-brand transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded px-1.5 py-0.5"
             >
               How It Works
             </button>
             <button
               onClick={() => scrollTo('engine-details')}
-              className="hover:text-brand transition-colors"
+              className="hover:text-brand transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded px-1.5 py-0.5"
             >
               Architecture
             </button>
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 text-brand hover:text-brand-hover transition-colors font-semibold"
+              className="inline-flex items-center gap-1 text-brand hover:text-brand-hover transition-colors font-semibold focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded px-1.5 py-0.5"
             >
               <span>Back to top</span>
               <ArrowUp className="w-3.5 h-3.5" />

@@ -28,11 +28,27 @@ function App() {
   const [hasRequestedRecs, setHasRequestedRecs] = useState(false);
 
   const recommendationsRef = useRef(null);
+  const recAbortControllerRef = useRef(null);
+  const detailAbortControllerRef = useRef(null);
+  const activeRecQueryRef = useRef('');
 
   // Explicit ML Recommendation Request
   const handleFindSimilar = useCallback(async (targetTitle) => {
     const query = (typeof targetTitle === 'string' ? targetTitle : movieName).trim();
     if (!query) return;
+
+    // Prevent duplicate parallel requests for the same query while loading
+    if (recLoading && activeRecQueryRef.current.toLowerCase() === query.toLowerCase()) {
+      return;
+    }
+
+    // Cancel any previous in-flight recommendation request
+    if (recAbortControllerRef.current) {
+      recAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    recAbortControllerRef.current = controller;
+    activeRecQueryRef.current = query;
 
     setSearchedTitle(query);
     setRecLoading(true);
@@ -49,7 +65,9 @@ function App() {
 
     try {
       const encoded = encodeURIComponent(query);
-      const response = await axios.get(`${API_BASE_URL}/api/movies/${encoded}`);
+      const response = await axios.get(`${API_BASE_URL}/api/movies/${encoded}`, {
+        signal: controller.signal
+      });
 
       if (Array.isArray(response.data)) {
         setRecommendations(response.data);
@@ -57,6 +75,9 @@ function App() {
         setRecommendations([]);
       }
     } catch (err) {
+      if (axios.isCancel(err) || err.name === 'CanceledError' || err.name === 'AbortError') {
+        return;
+      }
       console.error('Recommendation fetch error:', err);
       setRecommendations([]);
 
@@ -76,9 +97,12 @@ function App() {
         setRecError('An unexpected error occurred. Please try again.');
       }
     } finally {
-      setRecLoading(false);
+      if (!controller.signal.aborted) {
+        setRecLoading(false);
+        activeRecQueryRef.current = '';
+      }
     }
-  }, [movieName]);
+  }, [movieName, recLoading]);
 
   // Open Movie Detail View (Does NOT trigger ML recommendation request automatically)
   const handleSelectMovie = useCallback(async (movieOrTitle) => {
@@ -86,6 +110,11 @@ function App() {
     // Clear previous recommendations for prior selection
     setRecommendations([]);
     setHasRequestedRecs(false);
+
+    // Cancel any in-flight movie detail request
+    if (detailAbortControllerRef.current) {
+      detailAbortControllerRef.current.abort();
+    }
 
     if (movieOrTitle && typeof movieOrTitle === 'object' && movieOrTitle.title) {
       // In-memory movie document from catalog
@@ -112,6 +141,9 @@ function App() {
     const titleQuery = (typeof movieOrTitle === 'string' ? movieOrTitle : movieName).trim();
     if (!titleQuery) return;
 
+    const controller = new AbortController();
+    detailAbortControllerRef.current = controller;
+
     setMovieName(titleQuery);
     setDetailLoading(true);
 
@@ -130,7 +162,9 @@ function App() {
 
     try {
       const encoded = encodeURIComponent(titleQuery);
-      const response = await axios.get(`${API_BASE_URL}/api/movie/details/${encoded}`);
+      const response = await axios.get(`${API_BASE_URL}/api/movie/details/${encoded}`, {
+        signal: controller.signal
+      });
 
       if (response.data && response.data.title) {
         setSelectedMovie(response.data);
@@ -138,6 +172,9 @@ function App() {
         setDetailError(`Movie "${titleQuery}" was not found in our catalog of 4,800+ titles.`);
       }
     } catch (err) {
+      if (axios.isCancel(err) || err.name === 'CanceledError' || err.name === 'AbortError') {
+        return;
+      }
       console.error('Movie detail fetch error:', err);
       if (err.response && err.response.status === 404) {
         setDetailError(`Movie "${titleQuery}" was not found in the catalog. Please check your spelling or choose from the catalog.`);
@@ -146,7 +183,9 @@ function App() {
       }
       setSelectedMovie(null);
     } finally {
-      setDetailLoading(false);
+      if (!controller.signal.aborted) {
+        setDetailLoading(false);
+      }
     }
   }, [movieName]);
 
@@ -172,6 +211,14 @@ function App() {
     params.delete('movie');
     const newQuery = params.toString();
     window.history.pushState(null, '', window.location.pathname + (newQuery ? `?${newQuery}` : ''));
+
+    // Smoothly scroll to catalog to maintain stable user position
+    setTimeout(() => {
+      const catalogEl = document.getElementById('discover-catalog');
+      if (catalogEl) {
+        catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
   };
 
   // On mount check: ?movie= or ?search= in URL

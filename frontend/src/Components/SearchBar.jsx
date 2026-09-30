@@ -71,7 +71,9 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
             <button
               type="submit"
               disabled={loading}
-              className="px-3.5 sm:px-7 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-brand via-brand-blue to-brand-violet hover:from-brand-hover hover:to-brand-violetHover text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
+              aria-busy={loading}
+              aria-label="Search and recommend movies"
+              className="px-3.5 sm:px-7 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-brand via-brand-blue to-brand-violet hover:from-brand-hover hover:to-brand-violetHover text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md shadow-brand/25 hover:shadow-lg hover:shadow-brand/35 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
             >
               {loading ? (
                 <>
@@ -99,7 +101,7 @@ function SearchBar({ movieName, setMovieName, onSearch, loading }) {
             key={title}
             onClick={() => handleSuggestionClick(title)}
             disabled={loading}
-            className="px-3 py-1 rounded-full bg-white hover:bg-brand-light border border-canvas-border hover:border-brand/40 text-ink-secondary hover:text-brand font-medium transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50"
+            className="px-3 py-1 rounded-full bg-white hover:bg-brand-light border border-canvas-border hover:border-brand/40 text-ink-secondary hover:text-brand font-medium transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
           >
             {title}
           </button>

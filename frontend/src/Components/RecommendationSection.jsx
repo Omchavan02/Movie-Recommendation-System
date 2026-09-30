@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles, AlertCircle, Film, RefreshCw } from 'lucide-react';
 import MovieCard from './MovieCard';
 import MovieCardSkeleton from './MovieCardSkeleton';
@@ -13,6 +13,8 @@ const RecommendationSection = forwardRef(({
   onRetry,
   onSelectMovie
 }, ref) => {
+  const shouldReduceMotion = useReducedMotion();
+
   // If no recommendation has been requested yet, don't display section
   if (!hasSearched && !loading && !error) {
     return null;
@@ -53,9 +55,9 @@ const RecommendationSection = forwardRef(({
         {/* Polished Error Experience */}
         {!loading && error && (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0.2 : 0.3 }}
             className="max-w-2xl mx-auto p-6 sm:p-8 rounded-2xl bg-white border border-accent-coral/30 shadow-card text-center"
           >
             <div className="w-12 h-12 rounded-full bg-accent-coralLight border border-accent-coral/30 flex items-center justify-center mx-auto mb-4">
@@ -71,7 +73,7 @@ const RecommendationSection = forwardRef(({
               <button
                 type="button"
                 onClick={onRetry}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-xs font-semibold uppercase tracking-wider hover:bg-brand-hover shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white text-xs font-semibold uppercase tracking-wider hover:bg-brand-hover shadow-sm transition-all active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try Again</span>
@@ -83,9 +85,9 @@ const RecommendationSection = forwardRef(({
         {/* Empty Result Experience */}
         {!loading && !error && hasSearched && recommendations.length === 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0.2 : 0.3 }}
             className="max-w-2xl mx-auto p-8 rounded-2xl bg-white border border-canvas-border shadow-card text-center"
           >
             <div className="w-12 h-12 rounded-full bg-canvas-subtle border border-slate-200 flex items-center justify-center mx-auto mb-4">
@@ -103,9 +105,9 @@ const RecommendationSection = forwardRef(({
           <div>
             {/* Header: Contextual Source & Factual Explanation */}
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
+              animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{ duration: shouldReduceMotion ? 0.2 : 0.35, ease: 'easeOut' }}
               className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-5 border-b border-canvas-border"
             >
               <div>

@@ -132,7 +132,7 @@ function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
   }, [debouncedSearch, genre, minRating, yearRange, sort, page]);
 
   // Fetch catalog movies
-  const fetchCatalog = useCallback(async () => {
+  const fetchCatalog = useCallback(async (signal) => {
     setLoading(true);
     setError(null);
 
@@ -161,7 +161,7 @@ function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
         params.maxYear = selectedRange.maxYear;
       }
 
-      const res = await axios.get(`${API_BASE_URL}/api/movies`, { params });
+      const res = await axios.get(`${API_BASE_URL}/api/movies`, { params, signal });
 
       if (res.data && Array.isArray(res.data.movies)) {
         setMovies(res.data.movies);
@@ -177,6 +177,10 @@ function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
         setMovies([]);
       }
     } catch (err) {
+      if (axios.isCancel(err) || err.name === 'CanceledError' || err.name === 'AbortError') {
+        // Ignored: request was superseded by a newer query
+        return;
+      }
       console.error('Catalog fetch error:', err);
       if (err.response) {
         setError(err.response.data?.error || 'Failed to load movie catalog. Please try again.');
@@ -187,12 +191,18 @@ function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
       }
       setMovies([]);
     } finally {
-      setLoading(false);
+      if (!signal || !signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [page, sort, debouncedSearch, genre, minRating, yearRange]);
 
   useEffect(() => {
-    fetchCatalog();
+    const controller = new AbortController();
+    fetchCatalog(controller.signal);
+    return () => {
+      controller.abort();
+    };
   }, [fetchCatalog]);
 
   const handlePageChange = (newPage) => {
