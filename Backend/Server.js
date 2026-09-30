@@ -208,6 +208,34 @@ app.get('/api/movies', async (req, res) => {
     }
 });
 
+// GET /api/movie/details/:movieName - Fetch full details for a single movie by title (case-insensitive)
+app.get('/api/movie/details/:movieName', async (req, res) => {
+    const rawMovieName = req.params.movieName || ''
+    const movieName = rawMovieName.trim()
+
+    try {
+        if (!movieName) {
+            return res.status(400).json({ error: 'Movie name is required' })
+        }
+
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ error: 'Database service unavailable. Please ensure MongoDB is running.' })
+        }
+
+        const escaped = escapeRegex(movieName)
+        const movie = await Movie.findOne({ title: { $regex: new RegExp(`^${escaped}$`, 'i') } }).lean()
+
+        if (!movie) {
+            return res.status(404).json({ error: 'Movie not found' })
+        }
+
+        res.json(movie)
+    } catch (error) {
+        console.error(`Error fetching movie details: ${error.message}`)
+        res.status(500).json({ error: 'An error occurred while fetching movie details.' })
+    }
+})
+
 // Define a route to handle GET requests to '/api/movies/:movieName'
 app.get('/api/movies/:movieName', async (req, res) => {
     const rawMovieName = req.params.movieName || ''

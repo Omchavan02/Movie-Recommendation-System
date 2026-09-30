@@ -10,7 +10,8 @@ const RecommendationSection = forwardRef(({
   loading,
   error,
   hasSearched,
-  onRetry
+  onRetry,
+  onSelectMovie
 }, ref) => {
   // If no search has occurred yet, don't display section
   if (!hasSearched && !loading && !error) {
@@ -126,6 +127,7 @@ const RecommendationSection = forwardRef(({
                   key={movie._id || movie.id || index}
                   movie={movie}
                   index={index}
+                  onSelect={onSelectMovie}
                 />
               ))}
             </div>

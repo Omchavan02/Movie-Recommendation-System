@@ -54,7 +54,7 @@ const SORT_OPTIONS = [
   { label: 'Title (Z–A)', value: 'title_desc' },
 ];
 
-function DiscoverSection({ onSelectMovie }) {
+function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
   // Read initial query params
   const initialParams = new URLSearchParams(window.location.search);
   const [search, setSearch] = useState(initialParams.get('catalog_search') || '');
@@ -526,6 +526,7 @@ function DiscoverSection({ onSelectMovie }) {
                   index={index}
                   isRecommendation={false}
                   onSelect={onSelectMovie}
+                  onRecommend={onRecommendMovie}
                 />
               ))}
             </div>

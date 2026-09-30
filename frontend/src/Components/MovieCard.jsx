@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, Film, ExternalLink, ChevronDown, ChevronUp, Star, Sparkles } from 'lucide-react';
 import { getTmdbImageUrl } from '../utils/tmdb';
 
-function MovieCard({ movie, index, onSelect, isRecommendation = true }) {
+function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = true }) {
   const [expanded, setExpanded] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -85,12 +85,13 @@ function MovieCard({ movie, index, onSelect, isRecommendation = true }) {
           <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand/90 backdrop-blur-md text-[11px] font-semibold text-white shadow-2xs">
             <span>#{index + 1} Match</span>
           </div>
-        ) : onSelect ? (
+        ) : (onRecommend || onSelect) ? (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onSelect(movie);
+              if (onRecommend) onRecommend(movie.title);
+              else if (onSelect) onSelect(movie);
             }}
             className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/95 hover:bg-white backdrop-blur-md text-[11px] font-bold text-brand shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
             aria-label={`Get recommendations for ${movie.title}`}
@@ -178,12 +179,13 @@ function MovieCard({ movie, index, onSelect, isRecommendation = true }) {
           </div>
 
           <div className="flex items-center gap-3">
-            {onSelect && (
+            {(onRecommend || onSelect) && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelect(movie);
+                  if (onRecommend) onRecommend(movie.title);
+                  else if (onSelect) onSelect(movie);
                 }}
                 className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-hover hover:underline transition-colors"
                 title={`Find recommendations similar to ${movie.title}`}
