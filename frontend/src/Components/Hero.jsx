@@ -4,28 +4,28 @@ import SearchBar from './SearchBar';
 
 function Hero({ movieName, setMovieName, onSearch, loading }) {
   return (
-    <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
+    <section className="relative pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 overflow-hidden">
       {/* Background Soft Gradients & Atmospheric Shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Soft abstract ambient glow */}
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-brand-light/80 via-brand-violetLight/40 to-transparent blur-3xl rounded-full" />
-        
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[850px] h-[350px] bg-gradient-to-b from-brand-light/60 via-brand-violetLight/25 to-transparent blur-3xl rounded-full" />
+
         {/* Subtle geometric dot pattern */}
         <div
-          className="absolute inset-0 opacity-[0.4]"
+          className="absolute inset-0 opacity-[0.35]"
           style={{
-            backgroundImage: `radial-gradient(#CBD5E1 1px, transparent 1px)`,
+            backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)',
             backgroundSize: '28px 28px',
           }}
         />
 
         {/* Soft bottom blend to canvas */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-canvas to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-canvas to-transparent" />
       </div>
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         {/* Eyebrow Badge */}
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/90 border border-brand/20 text-[11px] sm:text-xs font-semibold text-brand shadow-xs mb-5 sm:mb-6">
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-white border border-brand/20 text-[11px] sm:text-xs font-semibold text-brand shadow-xs mb-5 sm:mb-6">
           <Clapperboard className="w-3.5 h-3.5 text-brand shrink-0" />
           <span>Content-Based Cinema Recommendation</span>
           <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-brand" />
@@ -45,7 +45,7 @@ function Hero({ movieName, setMovieName, onSearch, loading }) {
           Input any movie you love. Our CountVectorizer and cosine similarity algorithms evaluate thematic keywords, plot overviews, genres, cast, and directors to curate matching cinema.
         </p>
 
-        {/* Embedded Search Bar */}
+        {/* Embedded Search Bar & Popular Suggestions */}
         <div className="mt-6 sm:mt-10">
           <SearchBar
             movieName={movieName}
