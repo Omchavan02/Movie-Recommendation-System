@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import Navbar from './Components/Navbar';
+import CinematicSlider from './Components/CinematicSlider';
 import Hero from './Components/Hero';
 import MovieDetailSection from './Components/MovieDetailSection';
 import MovieDetailSkeleton from './Components/MovieDetailSkeleton';
@@ -252,7 +253,10 @@ function App() {
 
       {/* Main Content Area */}
       <main className="flex-grow">
-        {/* Cinematic Hero & Integrated Search */}
+        {/* Dedicated Cinematic Image Slider Section */}
+        <CinematicSlider />
+
+        {/* Clean Text & Search Hero Content Section */}
         <Hero
           movieName={movieName}
           setMovieName={setMovieName}
