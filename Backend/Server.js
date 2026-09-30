@@ -1,5 +1,5 @@
 // Import required modules
-require('dotenv').config()
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') })
 const express = require('express') 
 const axios = require('axios') 
 const mongoose = require('mongoose') 
@@ -271,10 +271,16 @@ app.get('/api/movies/:movieName', async (req, res) => {
         const recommendedMovieIds = djangoResponse.data.recommended_movies
 
         // Find the recommended movies in the MongoDB database using the recommended movie IDs
-        const recommendedMovies = await Movie.find({ id: { $in: recommendedMovieIds } })
+        const recommendedMovies = await Movie.find({ id: { $in: recommendedMovieIds } }).lean()
+
+        // Preserve exact Django ML cosine similarity ranking order
+        const movieMap = new Map(recommendedMovies.map((m) => [m.id, m]))
+        const orderedMovies = (recommendedMovieIds || [])
+            .map((id) => movieMap.get(id))
+            .filter(Boolean)
 
         // Send the list of recommended movies as the JSON response
-        res.json(recommendedMovies)
+        res.json(orderedMovies)
     } catch (error) {
         console.error(`An error occurred: ${error.message}`) 
 

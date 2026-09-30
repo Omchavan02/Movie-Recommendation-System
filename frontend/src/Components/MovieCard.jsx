@@ -36,7 +36,10 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
       className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-white border border-canvas-border hover:border-brand/40 shadow-card hover:shadow-card-hover transition-all duration-300"
     >
       {/* Cinematic Poster Frame */}
-      <div className="relative aspect-[16/10] sm:aspect-[3/2] bg-slate-900 overflow-hidden flex items-center justify-center border-b border-canvas-borderLight">
+      <div
+        onClick={onSelect ? () => onSelect(movie) : undefined}
+        className={`relative aspect-[16/10] sm:aspect-[3/2] bg-slate-900 overflow-hidden flex items-center justify-center border-b border-canvas-borderLight ${onSelect ? 'cursor-pointer' : ''}`}
+      >
         {displayImage && !imgError ? (
           <img
             src={displayImage}
@@ -82,8 +85,9 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
 
         {/* Bottom Badges */}
         {isRecommendation ? (
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand/90 backdrop-blur-md text-[11px] font-semibold text-white shadow-2xs">
-            <span>#{index + 1} Match</span>
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-950/85 backdrop-blur-md text-[11px] font-bold text-white shadow-2xs border border-white/20">
+            <span className="text-brand-light font-extrabold tracking-wider">#{String(index + 1).padStart(2, '0')}</span>
+            <span className="text-white/80 font-medium">Rank</span>
           </div>
         ) : (onRecommend || onSelect) ? (
           <button
@@ -179,7 +183,19 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
           </div>
 
           <div className="flex items-center gap-3">
-            {(onRecommend || onSelect) && (
+            {isRecommendation ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onSelect) onSelect(movie);
+                }}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-brand hover:text-brand-hover hover:underline transition-colors cursor-pointer"
+                title={`View movie details for ${movie.title}`}
+              >
+                <span>Details &rarr;</span>
+              </button>
+            ) : (onRecommend || onSelect) ? (
               <button
                 type="button"
                 onClick={(e) => {
@@ -193,7 +209,7 @@ function MovieCard({ movie, index, onSelect, onRecommend, isRecommendation = tru
                 <Sparkles className="w-3 h-3 text-brand" />
                 <span>Similar</span>
               </button>
-            )}
+            ) : null}
 
             {hasValidHomepage ? (
               <a

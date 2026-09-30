@@ -239,7 +239,7 @@ function MovieDetailSection({
                   {recLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Computing Recommendations...</span>
+                      <span>Finding Similar Movies...</span>
                     </>
                   ) : (
                     <>

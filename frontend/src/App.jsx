@@ -255,7 +255,7 @@ function App() {
           loading={recLoading}
           error={recError}
           hasSearched={hasRequestedRecs}
-          onRetry={focusSearch}
+          onRetry={() => handleFindSimilar(searchedTitle)}
           onSelectMovie={handleSelectMovie}
         />
 
