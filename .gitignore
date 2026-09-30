@@ -26,6 +26,8 @@ ML_Model/movie_dict.pkl
 ML_Model/similarity.pkl
 movie_Python/similarity.pkl
 movie_Python/movie_dict.pkl
+Movie_Python/*.pkl
+*.sqlite3
 
 # Logs and Debugging
 *.log

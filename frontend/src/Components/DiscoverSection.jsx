@@ -495,7 +495,7 @@ function DiscoverSection({ onSelectMovie, onRecommendMovie }) {
             </p>
             <button
               type="button"
-              onClick={fetchCatalog}
+              onClick={() => fetchCatalog()}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-white font-semibold text-xs tracking-wider uppercase shadow-sm hover:bg-brand-hover transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />

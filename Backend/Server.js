@@ -16,6 +16,7 @@ const Movie = require('./models/Movie')
 
 // Use CORS middleware to allow cross-origin requests
 app.use(cors())
+app.use(express.json())
 
 // Connect to MongoDB database
 mongoose.connect(mongoUri).catch((err) => {
@@ -265,7 +266,7 @@ app.get('/api/movies/:movieName', async (req, res) => {
         console.log(`Movie found: ${movie.title} with ID: ${movie.id}`) 
 
         // Make an HTTP request to a Django API to get recommended movies based on the found movie's ID
-        const djangoResponse = await axios.get(`${djangoUrl}/api/recommended/${movie.id}/`)
+        const djangoResponse = await axios.get(`${djangoUrl}/api/recommended/${movie.id}/`, { timeout: 15000 })
 
         // Extract recommended movie IDs from the Django API response
         const recommendedMovieIds = djangoResponse.data.recommended_movies
