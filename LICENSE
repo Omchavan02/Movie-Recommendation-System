@@ -1,0 +1,47 @@
+MIT License
+
+Copyright (c) Dipanjan Pathak
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Attribution and Component Scope:
+
+1. Upstream Source Code:
+   This project is derived from and builds upon MERN_Movie_Recomendation by Dipanjan Pathak:
+   https://github.com/dipanjanpathak/MERN_Movie_Recomendation
+   The upstream source code is licensed under the MIT License as stated above.
+
+2. CineMatch Modifications and Extensions:
+   Subsequent enhancements, feature additions, and user interface improvements
+   developed for CineMatch are made available under the same MIT License terms.
+
+3. TMDB Data and Media:
+   Movie metadata, posters, and backdrop images are retrieved via the TMDB API.
+   This product uses the TMDB API but is not endorsed or certified by TMDB.
+   TMDB data and media are subject to TMDB's Terms of Use and API Terms of Service.
+   Neither the upstream author nor this project claims ownership of TMDB-provided content.
+   (Note: While the required textual attribution is present in the application, an
+   official TMDB logo asset is not bundled with this repository.)
+
+4. Third-Party Intellectual Property:
+   All movie titles, logos, character names, and related visual assets are trademarks
+   and/or copyrighted material of their respective studio owners and intellectual
+   property holders. No ownership or endorsement is claimed.
