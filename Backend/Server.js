@@ -5,6 +5,66 @@ const axios = require('axios')
 const mongoose = require('mongoose') 
 const cors = require('cors')
 
+// ── Django cold-start retry configuration ────────────────────────────────────
+// Render free-tier services can take ~60 s to wake from idle.
+// Each attempt gets its own per-request timeout; delays fill the gap between.
+//   Max total wait ≈ (DJANGO_REQUEST_TIMEOUT_MS × DJANGO_MAX_RETRIES)
+//                   + sum(DJANGO_RETRY_DELAYS_MS)
+//                 = (20 000 × 4) + (5 000 + 15 000 + 25 000)
+//                 = 125 000 ms  (~2 min 5 s)
+const DJANGO_REQUEST_TIMEOUT_MS = 20_000          // per-attempt Axios timeout
+const DJANGO_MAX_RETRIES        = 4               // total attempts (1 + 3 retries)
+const DJANGO_RETRY_DELAYS_MS    = [5_000, 15_000, 25_000]  // waits between attempts
+
+/** Returns true for failures that are plausibly transient (cold-start / proxy hiccup). */
+function isDjangoTransient(error) {
+    if (!error.response) {
+        // Network-level failure: connection refused, reset, or timeout
+        const code = error.code || ''
+        return ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'ECONNABORTED'].includes(code)
+    }
+    const status = error.response.status
+    return status === 502 || status === 503 || status === 504
+}
+
+/** Promisified sleep. */
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Calls Django GET /api/recommended/:movieId/ with bounded retries.
+ * Resolves with the Axios response on success.
+ * Rejects with the last error on permanent failure or exhausted retries.
+ */
+async function djangoGetRecommended(movieId) {
+    const url = `${djangoUrl}/api/recommended/${movieId}/`
+    let lastError
+
+    for (let attempt = 1; attempt <= DJANGO_MAX_RETRIES; attempt++) {
+        console.log(`[Django] Recommendation request attempt ${attempt}/${DJANGO_MAX_RETRIES}`)
+        try {
+            const response = await axios.get(url, { timeout: DJANGO_REQUEST_TIMEOUT_MS })
+            console.log(`[Django] Recommendation request succeeded on attempt ${attempt}`)
+            return response
+        } catch (err) {
+            lastError = err
+            if (!isDjangoTransient(err)) {
+                // Permanent error (e.g. 404, 400) — no point retrying
+                console.log(`[Django] Non-transient error (${err.response ? err.response.status : err.code}), not retrying`)
+                throw err
+            }
+            const statusStr = err.response ? err.response.status : err.code
+            if (attempt < DJANGO_MAX_RETRIES) {
+                const delay = DJANGO_RETRY_DELAYS_MS[attempt - 1]
+                console.log(`[Django] Transient upstream failure (${statusStr}), retrying in ${delay / 1000}s…`)
+                await sleep(delay)
+            } else {
+                console.log(`[Django] Transient failure (${statusStr}), all ${DJANGO_MAX_RETRIES} attempts exhausted`)
+            }
+        }
+    }
+    throw lastError
+}
+
 // Initialize the Express application
 const app = express()
 const port = process.env.PORT || 3050;
@@ -265,8 +325,8 @@ app.get('/api/movies/:movieName', async (req, res) => {
 
         console.log(`Movie found: ${movie.title} with ID: ${movie.id}`) 
 
-        // Make an HTTP request to a Django API to get recommended movies based on the found movie's ID
-        const djangoResponse = await axios.get(`${djangoUrl}/api/recommended/${movie.id}/`, { timeout: 15000 })
+        // Make an HTTP request to Django with cold-start-tolerant retry logic
+        const djangoResponse = await djangoGetRecommended(movie.id)
 
         // Extract recommended movie IDs from the Django API response
         const recommendedMovieIds = djangoResponse.data.recommended_movies
