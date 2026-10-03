@@ -5,16 +5,14 @@ const axios = require('axios')
 const mongoose = require('mongoose') 
 const cors = require('cors')
 
-// ── Django cold-start retry configuration ────────────────────────────────────
-// Render free-tier services can take ~60 s to wake from idle.
-// Each attempt gets its own per-request timeout; delays fill the gap between.
-//   Max total wait ≈ (DJANGO_REQUEST_TIMEOUT_MS × DJANGO_MAX_RETRIES)
-//                   + sum(DJANGO_RETRY_DELAYS_MS)
-//                 = (20 000 × 4) + (5 000 + 15 000 + 25 000)
-//                 = 125 000 ms  (~2 min 5 s)
-const DJANGO_REQUEST_TIMEOUT_MS = 20_000          // per-attempt Axios timeout
-const DJANGO_MAX_RETRIES        = 4               // total attempts (1 + 3 retries)
-const DJANGO_RETRY_DELAYS_MS    = [5_000, 15_000, 25_000]  // waits between attempts
+// ── Django cold-start configuration ──────────────────────────────────────────
+// Render free-tier services take ~60 s to wake from idle.
+// Strategy: poll /api/health/ with a hard wall-clock deadline, then make
+// exactly ONE recommendation request once the service is confirmed ready.
+const DJANGO_HEALTH_POLL_INTERVAL_MS = 5_000   // gap between consecutive health polls
+const DJANGO_HEALTH_POLL_TIMEOUT_MS  = 5_000   // per-poll Axios timeout
+const DJANGO_HEALTH_DEADLINE_MS      = 90_000  // hard wall-clock ceiling for health wait
+const DJANGO_REQUEST_TIMEOUT_MS      = 20_000  // single recommendation request timeout
 
 /** Returns true for failures that are plausibly transient (cold-start / proxy hiccup). */
 function isDjangoTransient(error) {
@@ -31,38 +29,77 @@ function isDjangoTransient(error) {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * Calls Django GET /api/recommended/:movieId/ with bounded retries.
- * Resolves with the Axios response on success.
- * Rejects with the last error on permanent failure or exhausted retries.
+ * Polls Django GET /api/health/ until it returns HTTP 200 or the hard
+ * wall-clock deadline (DJANGO_HEALTH_DEADLINE_MS) is reached.
+ *
+ * The deadline is checked against Date.now() — not a fixed poll count —
+ * so the total wait is bounded by elapsed time regardless of per-poll
+ * response latency or sleep jitter.
+ *
+ * Each poll's Axios timeout is capped to the remaining budget so a single
+ * slow request cannot cause the total wait to exceed the deadline.
+ *
+ * Returns when Django is healthy. Throws on deadline or permanent error.
  */
-async function djangoGetRecommended(movieId) {
-    const url = `${djangoUrl}/api/recommended/${movieId}/`
-    let lastError
+async function djangoWaitForHealth() {
+    const healthUrl = `${djangoUrl}/api/health/`
+    const deadline = Date.now() + DJANGO_HEALTH_DEADLINE_MS
+    let pollCount = 0
 
-    for (let attempt = 1; attempt <= DJANGO_MAX_RETRIES; attempt++) {
-        console.log(`[Django] Recommendation request attempt ${attempt}/${DJANGO_MAX_RETRIES}`)
+    while (Date.now() < deadline) {
+        pollCount++
+        // Cap per-poll timeout to remaining budget — prevents a single slow
+        // request from pushing total elapsed time past the deadline.
+        const remaining = deadline - Date.now()
+        const pollTimeout = Math.min(DJANGO_HEALTH_POLL_TIMEOUT_MS, remaining)
+
         try {
-            const response = await axios.get(url, { timeout: DJANGO_REQUEST_TIMEOUT_MS })
-            console.log(`[Django] Recommendation request succeeded on attempt ${attempt}`)
-            return response
+            await axios.get(healthUrl, { timeout: pollTimeout })
+            // HTTP 200 — Django is ready
+            if (pollCount > 1) {
+                console.log(`[Django] Service healthy after ${pollCount} health poll(s)`)
+            }
+            return
         } catch (err) {
-            lastError = err
             if (!isDjangoTransient(err)) {
-                // Permanent error (e.g. 404, 400) — no point retrying
-                console.log(`[Django] Non-transient error (${err.response ? err.response.status : err.code}), not retrying`)
+                // Permanent error on the health endpoint (e.g. 404 = wrong URL)
+                const statusStr = err.response ? err.response.status : err.code
+                console.log(`[Django] Health check: non-transient error (${statusStr}), aborting wait`)
                 throw err
             }
             const statusStr = err.response ? err.response.status : err.code
-            if (attempt < DJANGO_MAX_RETRIES) {
-                const delay = DJANGO_RETRY_DELAYS_MS[attempt - 1]
-                console.log(`[Django] Transient upstream failure (${statusStr}), retrying in ${delay / 1000}s…`)
-                await sleep(delay)
-            } else {
-                console.log(`[Django] Transient failure (${statusStr}), all ${DJANGO_MAX_RETRIES} attempts exhausted`)
+            const remainingAfterPoll = deadline - Date.now()
+            if (remainingAfterPoll <= 0) {
+                // Deadline was reached or exceeded during/after the poll
+                console.log(`[Django] Health check: deadline reached after ${pollCount} poll(s)`)
+                throw err
             }
+            // Sleep for the interval, but never past the deadline
+            const sleepMs = Math.min(DJANGO_HEALTH_POLL_INTERVAL_MS, remainingAfterPoll)
+            console.log(
+                `[Django] Health poll ${pollCount} (${statusStr}), ` +
+                `retrying in ${Math.round(sleepMs / 1000)}s ` +
+                `(${Math.round(remainingAfterPoll / 1000)}s remaining)`
+            )
+            await sleep(sleepMs)
         }
     }
-    throw lastError
+    // while-condition was false before starting a new poll (deadline passed
+    // exactly between the sleep returning and the next loop check)
+    console.log(`[Django] Health check: deadline exceeded after ${pollCount} poll(s)`)
+    throw new Error('Django service did not become healthy within the deadline')
+}
+
+/**
+ * Makes exactly ONE recommendation request to Django.
+ * Call djangoWaitForHealth() first to confirm Django is ready.
+ */
+async function djangoGetRecommended(movieId) {
+    const url = `${djangoUrl}/api/recommended/${movieId}/`
+    console.log('[Django] Sending recommendation request')
+    const response = await axios.get(url, { timeout: DJANGO_REQUEST_TIMEOUT_MS })
+    console.log('[Django] Recommendation request succeeded')
+    return response
 }
 
 // Initialize the Express application
@@ -325,7 +362,8 @@ app.get('/api/movies/:movieName', async (req, res) => {
 
         console.log(`Movie found: ${movie.title} with ID: ${movie.id}`) 
 
-        // Make an HTTP request to Django with cold-start-tolerant retry logic
+        // Ensure Django is awake, then make exactly one recommendation request
+        await djangoWaitForHealth()
         const djangoResponse = await djangoGetRecommended(movie.id)
 
         // Extract recommended movie IDs from the Django API response
